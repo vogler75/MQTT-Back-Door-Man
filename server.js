@@ -10,7 +10,8 @@ const mqttBaseTopic = 'tcp/bridge'; // Change this to the base MQTT topic
 const mqttOptions = { username: 'username', password: 'password' }; // Change this to your MQTT credentials or pass them as command line arguments
 
 // MQTT topics
-const mqttStatusTopic = mqttBaseTopic+'/status';
+const mqttOpenTopic = mqttBaseTopic+'/open';
+const mqttCloseTopic = mqttBaseTopic+'/close';
 const mqttInputTopic = mqttBaseTopic+'/c->s';
 const mqttOutputTopic = mqttBaseTopic+'/s->c';
 
@@ -36,7 +37,7 @@ const tcpServer = net.createServer((client) => {
         }
     });            
 
-    mqttClient.publish(mqttStatusTopic, "OPEN", (err) => {
+    mqttClient.publish(mqttOpenTopic, "", (err) => {
         if (err) {
             console.error(`Error publishing to MQTT: ${err}`);
         } else {
@@ -62,7 +63,7 @@ const tcpServer = net.createServer((client) => {
     // Handle client disconnect
     client.on('end', () => {
         console.log('Client disconnected');
-        mqttClient.publish(mqttStatusTopic, "CLOSE", (err) => {
+        mqttClient.publish(mqttCloseTopic, "", (err) => {
             if (err) {
                 console.error(`Error publishing to MQTT: ${err}`);
             } else {
@@ -75,6 +76,7 @@ const tcpServer = net.createServer((client) => {
     // Handle errors
     client.on('error', (err) => {
         console.error(`TCP client error: ${err}`);
+        mqttClient.publish(mqttCloseTopic, "");
     });
 });
 
