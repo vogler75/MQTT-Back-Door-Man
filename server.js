@@ -7,18 +7,19 @@ const tcpPort = 8080; // Change this to your desired TCP port
 // MQTT broker configuration
 const mqttBrokerUrl = 'mqtt://broker.hivemq.com'; // Change this to your MQTT broker's URL
 const mqttBaseTopic = 'tcp/bridge'; // Change this to the base MQTT topic
+const mqttOptions = { username: 'username', password: 'password' }; // Change this to your MQTT credentials or pass them as command line arguments
 
 // MQTT topics
-const mqttInputTopic = mqttBaseTopic+'/c->s'; // Change this to the input MQTT topic
-const mqttOutputTopic = mqttBaseTopic+'/s->c'; // Change this to the output MQTT topic
-const mqttStatusTopic = mqttBaseTopic+'/status'; // Change this to the open MQTT topic
+const mqttStatusTopic = mqttBaseTopic+'/status';
+const mqttInputTopic = mqttBaseTopic+'/c->s';
+const mqttOutputTopic = mqttBaseTopic+'/s->c';
 
 // Create a TCP server
 const tcpServer = net.createServer((client) => {
     console.log('Client connected');
 
     // Create an MQTT client and connect to the broker
-    const mqttClient = mqtt.connect(mqttBrokerUrl);
+    const mqttClient = mqtt.connect(mqttBrokerUrl, mqttOptions);
 
     // Handle MQTT messages from the input topic
     mqttClient.on('message', (topic, message) => {

@@ -4,10 +4,11 @@ const net = require('net');
 // MQTT broker configuration
 const mqttBrokerUrl = 'mqtt://broker.hivemq.com'; // Change this to your MQTT broker's URL
 const mqttBaseTopic = 'tcp/bridge'; // Change this to the base MQTT topic
+const mqttOptions = { username: 'username', password: 'password' }; // Change this to your MQTT credentials or pass them as command line arguments
 
-// TCP server configuration
-var destinationHost = 'localhost';
-var destinationPort = 22;
+// TCP destination server configuration
+var destinationHost = 'localhost'; // Change this to your desired TCP host or pass it as a command line argument
+var destinationPort = 22; // Change this to your desired TCP port or pass it as a command line argument
 
 if (process.argv.length > 1) 
     destinationHost = process.argv[2]; 
@@ -15,12 +16,12 @@ if (process.argv.length > 2)
     destinationPort = process.argv[3];
 
 // MQTT topics
-const mqttStatusTopic = mqttBaseTopic+'/status'; // Change this to the open MQTT topic
-const mqttInputTopic = mqttBaseTopic+'/s->c'; // Change this to the input MQTT topic
-const mqttOutputTopic = mqttBaseTopic+'/c->s'; // Change this to the output MQTT topic
+const mqttStatusTopic = mqttBaseTopic+'/status';
+const mqttInputTopic = mqttBaseTopic+'/s->c';
+const mqttOutputTopic = mqttBaseTopic+'/c->s';
 
 // Create an MQTT client and connect to the broker
-const mqttClient = mqtt.connect(mqttBrokerUrl);
+const mqttClient = mqtt.connect(mqttBrokerUrl, mqttOptions);
 
 // Subscribe to the input MQTT topic
 mqttClient.subscribe([mqttStatusTopic, mqttInputTopic], (err) => {
