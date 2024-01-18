@@ -55,20 +55,12 @@ mqttClient.on('message', (topic, message) => {
         // Handle errors for the TCP client
         tcpClient.on('error', (err) => {
             console.error(`TCP client error: ${err}`);
-            // TODO: send close to server
+            mqttClient.publish(mqttCloseTopic, uuid);
         });
 
         tcpClient.on('data', (data) => {
-            console.log(`Received data from TCP server: ${data.length}`);
-
-            // Publish the received data to the output MQTT topic
-            mqttClient.publish(mqttOutputTopic+"/"+uuid, data, (err) => {
-                if (err) {
-                    console.error(`Error publishing to MQTT: ${err}`);
-                } else {
-                    console.log(`Published message to MQTT topic "${mqttOutputTopic}": ${data.length}`);
-                }
-            });
+            console.log(`Received message from TCP server: ${data.length}`);
+            mqttClient.publish(mqttOutputTopic+"/"+uuid, data);
         });            
     }
     else if (topic === mqttCloseTopic) {      
@@ -84,7 +76,6 @@ mqttClient.on('message', (topic, message) => {
         let uuid = parts[parts.length-1];
         let tcpClient = tcpClients[uuid];
         if (tcpClient) {
-            console.log(`Write message to ${destinationHost} TCP server: ${message.length}`);
             tcpClient.write(message);
         }
     }

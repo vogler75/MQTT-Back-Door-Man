@@ -26,7 +26,14 @@ const mqttClient = mqtt.connect(mqttBrokerUrl, mqttOptions);
 // Handle MQTT messages from the input topic
 mqttClient.on('message', (topic, message) => {
     console.log(`Received message from MQTT topic "${topic}": ${message.length}`);
-    if (mqttPattern.matches(mqttInputTopic, topic)) {
+    if (topic === mqttCloseTopic) {
+        let uuid = message.toString();
+        let tcpClient = tcpClients[uuid];
+        if (tcpClient) {
+            tcpClient.end();
+        }
+    }
+    else if (mqttPattern.matches(mqttInputTopic, topic)) {
         let parts = topic.split("/");
         let uuid = parts[parts.length-1];
         let tcpClient = tcpClients[uuid];  
@@ -37,7 +44,7 @@ mqttClient.on('message', (topic, message) => {
 });
 
 // Subscribe to the input MQTT topic
-mqttClient.subscribe(mqttInputTopic, (err) => {
+mqttClient.subscribe([mqttCloseTopic, mqttInputTopic], (err) => {
     if (err) {
         console.error(`Error subscribing to MQTT topic: ${err}`);
     } else {
@@ -53,30 +60,14 @@ const tcpServer = net.createServer((tcpClient) => {
 
     // Handle data received from the TCP client
     tcpClient.on('data', (data) => {
-        const message = data.toString();
-        console.log(`Received message from TCP client: ${message.length}`);
-
-        // Publish the received message to an MQTT topic
-        mqttClient.publish(mqttOutputTopic+"/"+uuid, data, (err) => {
-            if (err) {
-                console.error(`Error publishing to MQTT: ${err}`);
-            } else {
-                console.log(`Published message to MQTT: ${message.length}`);
-            }
-        });
+        console.log(`Received message from TCP client: ${data.length}`);
+        mqttClient.publish(mqttOutputTopic+"/"+uuid, data);
     });
 
     // Handle client disconnect
     tcpClient.on('end', () => {
         console.log('Client disconnected');
-        mqttClient.publish(mqttCloseTopic, uuid, (err) => {
-            if (err) {
-                console.error(`Error publishing to MQTT: ${err}`);
-            } else {
-                console.log(`Published message to MQTT: CLOSE`);
-            }
-        });         
-        mqttClient.end();
+        mqttClient.publish(mqttCloseTopic, uuid);         
     });  
 
     // Handle errors
@@ -85,13 +76,7 @@ const tcpServer = net.createServer((tcpClient) => {
         mqttClient.publish(mqttCloseTopic, uuid);
     });
 
-    mqttClient.publish(mqttOpenTopic, uuid, (err) => {
-        if (err) {
-            console.error(`Error publishing to MQTT: ${err}`);
-        } else {
-            console.log(`Published message to MQTT: OPEN`);
-        }
-    });           
+    mqttClient.publish(mqttOpenTopic, uuid);           
 });
 
 // Start the TCP server and listen on the specified port
