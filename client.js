@@ -10,10 +10,12 @@ const mqttOptions = { username: 'username', password: 'password' }; // Change th
 var destinationHost = 'localhost'; // Change this to your desired TCP host or pass it as a command line argument
 var destinationPort = 22; // Change this to your desired TCP port or pass it as a command line argument
 
-if (process.argv.length > 1) 
-    destinationHost = process.argv[2]; 
 if (process.argv.length > 2) 
+    destinationHost = process.argv[2]; 
+if (process.argv.length > 3) 
     destinationPort = process.argv[3];
+
+console.log("Destination: "+destinationHost+":"+destinationPort);
 
 // MQTT topics
 const mqttStatusTopic = mqttBaseTopic+'/status';
