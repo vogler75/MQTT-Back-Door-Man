@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "mqtt": "^5.3.4"
+    "mqtt": "^5.3.4",
+    "mqtt-pattern": "^2.1.0",
+    "uuid": "^9.0.1"
   }
 }
